@@ -15,11 +15,11 @@ try {
   if ($stmt = $db->res->prepare("SELECT * from data where timestamp>=DATE_SUB(NOW(), INTERVAL ? HOUR) order by timestamp")) {
     $stmt->bind_param("i", $hrs);
     $stmt->execute();
-    $stmt->bind_result($timestamp, $heating, $target, $current, $humidity, $updated);
+    $stmt->bind_result($timestamp, $heating, $target, $current, $humidity, $updated, $outside);
     header("Content-type: text/tab-separated-values");
-    print "timestamp\theating\ttarget\tcurrent\thumidity\tupdated\n";
+    print "timestamp\theating\ttarget\tcurrent\thumidity\tupdated\toutside\n";
     while ($stmt->fetch()) {
-      print implode("\t", array($timestamp, $heating, $target, $current, $humidity, $updated)) . "\n";
+      print implode("\t", array($timestamp, $heating, $target, $current, $humidity, $updated,$outside)) . "\n";
     }
     $stmt->close();
   }

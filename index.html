@@ -20,6 +20,11 @@ body {
     stroke: steelblue;
     stroke-width: 2.0px;
   }
+.area {
+    fill: darkorange;
+    stroke-width: 0;
+    opacity: 0.5;
+}
 
   .brush .extent {
     stroke: #fff;
@@ -130,7 +135,7 @@ function brushUpdate() {
   upper.select(".x.axis").call(xAxis);
   upper.selectAll(".plot path")
     .attr("d", function(d) { 
-      if (d.name == "current") 
+      if (d.name == "current" || d.name == "outside") 
 	return line(d.values); 
       else
 	return lineStepafter(d.values); 
@@ -142,7 +147,7 @@ function brushUpdate() {
 
 // fetch the data
 d3.tsv("fetch.php?hrs=" + hours, function(error, data) {
-  color.domain(d3.keys(data[0]).filter(function(key) { return (key == "current" || key == "target" || key == "heating"); }));
+  color.domain(d3.keys(data[0]).filter(function(key) { return (key == "current" || key == "target" || key == "heating" || key == "outside"); }));
 
   data.forEach(function(d) {
     d.date = parseDate(d.timestamp);
@@ -153,7 +158,8 @@ d3.tsv("fetch.php?hrs=" + hours, function(error, data) {
       name: name,
       values: data.map(function(d) {
 	if (name == "heating") 
-          return { date: d.date, val: +d[name] + 60 };
+          //return { date: d.date, val: +d[name] + 15 };
+          return { date: d.date, val: +d[name] * d["target"]  };
 	else
           return { date: d.date, val: +d[name] };
       })
@@ -217,7 +223,13 @@ d3.tsv("fetch.php?hrs=" + hours, function(error, data) {
   // draw upper current/target/furnace trendlines
   upper.selectAll(".plot")
     .append("path")
-    .attr("class", "line")
+    .attr("class", function(d) {
+      if (d.name == "heating") 
+        return "area";
+      else 
+        return "line";
+      
+    })
     .attr("d", function(d) { 
       if (d.name == "current") 
 	return line(d.values); 
@@ -263,7 +275,7 @@ d3.tsv("fetch.php?hrs=" + hours, function(error, data) {
     .enter().append("circle")
     .attr("cx", function(d) { return x(d.date); }) 
     .attr("cy", function(d) { return y(d.val); }) 
-    .attr("r", 10) 
+    .attr("r", 1) 
     .attr("stroke", "black")
     .attr("stroke-width", 1)
     .attr("opacity", 0.1) 
